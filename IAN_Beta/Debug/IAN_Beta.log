@@ -1,0 +1,14 @@
+﻿  BLAS_Interface.cpp
+  main.cpp
+  mapminmax.cpp
+  코드를 생성하고 있습니다...
+main.obj : error LNK2019: _DGEMV"public: static void __cdecl BLAS_Interface::GEMV<double>(char const *,int,int,double,double const *,int,double const *,int,double,double *,int)" (??$GEMV@N@BLAS_Interface@@SAXPBDHHNPBNH1HNPANH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _DGEMM"public: static void __cdecl BLAS_Interface::GEMM<double>(char const *,char const *,int,int,int,double,double const *,int,double const *,int,double,double *,int)" (??$GEMM@N@BLAS_Interface@@SAXPBD0HHHNPBNH1HNPANH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _DGETRF"public: static int __cdecl BLAS_Interface::GETRF<double>(int,int,double *,int,int *)" (??$GETRF@N@BLAS_Interface@@SAHHHPANHPAH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _DGETRS"public: static int __cdecl BLAS_Interface::GETRS<double>(char const *,int,int,double *,int,int *,double *,int)" (??$GETRS@N@BLAS_Interface@@SAHPBDHHPANHPAH1H@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _DSYEV"public: static int __cdecl BLAS_Interface::SYEV<double>(char const *,char const *,int,double *,int,double *,double *,int)" (??$SYEV@N@BLAS_Interface@@SAHPBD0HPANH11H@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _MKL_malloc"protected: void __thiscall DynamicAllocator<double>::allocate_(int)" (?allocate_@?$DynamicAllocator@N@@IAEXH@Z) 함수에서 참조되는 확인할 수 없는 외부 기호
+main.obj : error LNK2019: _MKL_free"protected: void __thiscall DynamicAllocator<double>::deallocate_(void)" (?deallocate_@?$DynamicAllocator@N@@IAEXXZ) 함수에서 참조되는 확인할 수 없는 외부 기호
+mkl_rt.lib : warning LNK4272: 'x64' 라이브러리 컴퓨터 종류가 'x86' 대상 컴퓨터 종류와 충돌합니다.
+libiomp5md.lib : warning LNK4272: 'x64' 라이브러리 컴퓨터 종류가 'x86' 대상 컴퓨터 종류와 충돌합니다.
+E:\My_Research\01_ANN Coding\IAN_Beta\IAN_Beta\Debug\IAN_Beta.exe : fatal error LNK1120: 7개의 확인할 수 없는 외부 참조입니다.
