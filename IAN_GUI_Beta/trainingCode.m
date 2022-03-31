@@ -1,5 +1,5 @@
 system('IAN_Beta.exe');
-            
+
 MSE_scaled = zeros(repeat_no,1);
 for i=1:repeat_no
     exp_tmp = ['MSE_scaled(i) = load(''TrainingResult_', num2str(i),'\MSE_scaled.txt'');'];
@@ -20,7 +20,7 @@ mkdir(outputfdr);
 
 copyfile(bestfdr, outputfdr);
 removeFiles;
-            
+
 % RELATIVE ERROR
 testtar = load([outputfdr '\test_target.txt']);
 testout = load([outputfdr '\test_output.txt']);
@@ -30,8 +30,6 @@ testerr = abs(testtar - testout);
 maxerr = max(abs(testerr));
 relerr = 100*mean(testerr ./ max(abs(testtar)));
 MSE = sum(testerr .* testerr)/size(testerr, 1);
-
-
 
 %%% testtar = 0 인 경우에 대비하여 처리를 해주어야 함.
 %%% RELATIVE DIFFERENCE 를 고려해볼 것

@@ -1,8 +1,8 @@
 Maximum Epoch : 500
 Number of Layer : 2
 
-Transfer Fnc. of Layer 1 : logsig
-Transfer Fnc. of Layer 2 : purelin
+Activation Fnc. of Layer 1 : logsig
+Activation Fnc. of Layer 2 : purelin
 
 Neuron Number of Layer 1 : 10
 Neuron Number of Layer 2 : 1

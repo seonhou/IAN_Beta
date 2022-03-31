@@ -16,10 +16,12 @@ string to_string(T value)
 // Random Generator Function:
 int myrandom(int i) { return std::rand() % i; }
 
-void dataDivision(const RealMatrix& _P, RealMatrix& _T, int __Q, int __R, int __sM, int _P1_Q, int _P2_Q, RealMatrix& _P1, RealMatrix& _T1, RealMatrix& _P2, RealMatrix& _T2)
+void dataDivision(const RealMatrix& _P, RealMatrix& _T, int __R, int __sM, int _P1_Q, int _P2_Q, RealMatrix& _P1, RealMatrix& _T1, RealMatrix& _P2, RealMatrix& _T2)
 {
 	srand(unsigned(time(0)));
 	vector<int> myvector;
+
+	int __Q = _P1_Q + _P2_Q;
 
 	int* value;
 	value = new int[__Q];

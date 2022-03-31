@@ -1,9 +1,7 @@
-/*
-[rev_-] First Release
-[rev_A] relu updated (21.06.08)
-*/
 
 #pragma once
+
+#include "get_activated_value.h"
 
 // Neural Network Calculation for TEST or VALIDATION dataset
 RealMatrix ANN(int __Q, int __R, int __M, const IntVector& __S, IntVector& __Trans, RealMatrix& __Pmap, vector<RealMatrix>& __W, vector<RealVector>& __b)
@@ -36,18 +34,7 @@ RealMatrix ANN(int __Q, int __R, int __M, const IntVector& __S, IntVector& __Tra
 
 	for(int i=0; i<__S[0]; i++){
 		for(int q=0; q<__Q; q++){
-			if(__Trans(0) == 1){
-				temp = logsig(N[0](i,q));
-			}
-			else if(__Trans(0) == 2){
-				temp = tansig(N[0](i,q));
-			}
-			else if(__Trans(0) == 3){
-				temp = purelin(N[0](i,q));
-			}
-			else {
-				temp = relu(N[0](i, q));
-			}
+			temp = get_activated_value(__Trans(0), N[0](i, q));
 			A[0](i,q) = temp;
 		}
 	}
@@ -73,18 +60,7 @@ RealMatrix ANN(int __Q, int __R, int __M, const IntVector& __S, IntVector& __Tra
 
 		for(int i=0; i<__S[m]; i++){
 			for(int q=0; q<__Q; q++){
-				if(__Trans(m) == 1){
-					temp = logsig(N[m](i,q));
-				}
-				else if(__Trans(m) == 2){
-					temp = tansig(N[m](i,q));
-				}
-				else if(__Trans(m) == 3){
-					temp = purelin(N[m](i,q));
-				}
-				else {
-					temp = relu(N[m](i, q));
-				}
+				temp = get_activated_value(__Trans(m), N[m](i, q));
 				A[m](i,q) = temp;
 			}
 		}
@@ -128,18 +104,7 @@ vector<RealMatrix> ANN_train(int __Q, int __R, int __M, const IntVector& __S, In
 
 	for(int i=0; i<__S[0]; i++){
 		for(int q=0; q<__Q; q++){
-			if(__Trans(0) == 1){
-				temp = logsig(__train_N[0](i,q));
-			}
-			else if(__Trans(0) == 2){
-				temp = tansig(__train_N[0](i,q));
-			}
-			else if(__Trans(0) == 3){
-				temp = purelin(__train_N[0](i,q));
-			}
-			else {
-				temp = relu(__train_N[0](i, q));
-			}
+			temp = get_activated_value(__Trans(0), __train_N[0](i, q));
 			A[0](i,q) = temp;
 		}
 	}
@@ -165,18 +130,7 @@ vector<RealMatrix> ANN_train(int __Q, int __R, int __M, const IntVector& __S, In
 
 		for(int i=0; i<__S[m]; i++){
 			for(int q=0; q<__Q; q++){
-				if(__Trans(m) == 1){
-					temp = logsig(__train_N[m](i,q));
-				}
-				else if(__Trans(m) == 2){
-					temp = tansig(__train_N[m](i,q));
-				}
-				else if(__Trans(m) == 3){
-					temp = purelin(__train_N[m](i,q));
-				}
-				else {
-					temp = relu(__train_N[m](i, q));
-				}
+				temp = get_activated_value(__Trans(m), __train_N[m](i, q));
 				A[m](i,q) = temp;
 			}
 		}

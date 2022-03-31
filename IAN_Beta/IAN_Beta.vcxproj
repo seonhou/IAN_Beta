@@ -173,11 +173,14 @@
     <ClInclude Include="TransferFnc.h" />
     <ClInclude Include="X2Wb.h" />
     <ClInclude Include="getAlphaBetaGamma.h" />
+    <ClInclude Include="get_activated_value.h" />
+    <ClInclude Include="standardscaler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="linalg\BLAS_Interface.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mapminmax.cpp" />
+    <ClCompile Include="standardscaler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

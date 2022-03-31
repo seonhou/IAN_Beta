@@ -102,6 +102,12 @@
     <ClInclude Include="getAlphaBetaGamma.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="get_activated_value.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="standardscaler.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="linalg\BLAS_Interface.cpp">
@@ -111,6 +117,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="mapminmax.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="standardscaler.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

@@ -14,7 +14,7 @@
 #include "getAlphaBetaGamma.h"
 #include "isnan.h"
 
-int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pmax, RealVector& _Pmin, RealVector& _Tmax, RealVector& _Tmin, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck)
+int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck, int _normalization)
 {
 	clock_t LM_start, LM_finish;
 	double LM_duration = 0;
@@ -31,7 +31,6 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pmax, RealVecto
 	double mu_max = 1e10;
 	int nu = 10;
 	
-
 	// size_x : number of parameters (weights and bias)
 	int size_x = _S[0] * (_R + 1);
 	for (int i = 1; i < _M; i++) {
@@ -172,35 +171,13 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pmax, RealVecto
 			}
 
 			for (int i = 0; i < _sM; i++) {
-				if (_Trans(_M - 1) == 1) {
-					temp = -dlogsig(train_N[_M - 1](i, q));
-				}
-				else if (_Trans(_M - 1) == 2) {
-					temp = -dtansig(train_N[_M - 1](i, q));
-				}
-				else if (_Trans(_M - 1) == 3) {
-					temp = -dpurelin(train_N[_M - 1](i, q));
-				}
-				else {
-					temp = -drelu(train_N[_M - 1](i, q));
-				}
-				MS[_M - 1](i, i) = temp;
+				temp = get_dactivated_value(_Trans(_M - 1), train_N[_M - 1](i, q));
+				MS[_M - 1](i, i) = -temp;
 			}
 
 			for (int m = 0; m < _M - 1; m++) {
 				for (int i = 0; i < _S[m]; i++) {
-					if (_Trans(m) == 1) {
-						temp = dlogsig(train_N[m](i, q));
-					}
-					else if (_Trans(m) == 2) {
-						temp = dtansig(train_N[m](i, q));
-					}
-					else if (_Trans(m) == 3) {
-						temp = dpurelin(train_N[m](i, q));
-					}
-					else {
-						temp = drelu(train_N[m](i, q));
-					}
+					temp = get_dactivated_value(_Trans(m), train_N[m](i, q));
 					MS_temp[m](i, i) = temp;
 				}
 			}
@@ -467,10 +444,10 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pmax, RealVecto
 	} while (count < _max_step);
 
 	train_A[_M - 1] = ANN(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b);
-	SaveANNoutput("train", _train_Tmap, train_A[_M - 1], _sM, _train_Q, _Tmax, _Tmin, _FileDir);
+	SaveANNoutput("train", _train_Tmap, train_A[_M - 1], _sM, _train_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
 
 	test_A = ANN(_test_Q, _R, _M, _S, _Trans, _test_Pmap, W, b);
-	SaveANNoutput("test", _test_Tmap, test_A, _sM, _test_Q, _Tmax, _Tmin, _FileDir);
+	SaveANNoutput("test", _test_Tmap, test_A, _sM, _test_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
 
 	// Performance Evaluation using TEST dataset
 
@@ -589,19 +566,19 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pmax, RealVecto
 
 	// WRITE MAX & MIN DATA for MAPMINMAX
 	for(int i=0; i<_R; i++){
-		fout << _Pmax[i] << "\t";
+		fout << _Pdata1[i] << "\t";
 	}
 	fout << endl;
 	for(int i=0; i<_R; i++){
-		fout << _Pmin[i] << "\t";
+		fout << _Pdata2[i] << "\t";
 	}
 	fout << endl;
 	for(int i=0; i<_sM; i++){
-		fout << _Tmax[i] << "\t";
+		fout << _Tdata1[i] << "\t";
 	}
 	fout << endl;
 	for(int i=0; i<_sM; i++){
-		fout << _Tmin[i] << "\t";
+		fout << _Tdata2[i] << "\t";
 	}
 	fout.close();
 

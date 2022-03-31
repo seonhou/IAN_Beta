@@ -8,6 +8,7 @@
 #include "LMBP_RG.h"
 #include "getSize.h"
 #include "mapminmax.h"
+#include "standardscaler.h"
 
 using namespace std;
 
@@ -42,8 +43,17 @@ IAN_Beta_1.3에서 업데이트 된 사항(IAN_Beta_1.1 에서 업데이트를 진행함)
 
 /*
 IAN_Beta_1.4
-1) relu activation function이 추가됨
+1) ReLU activation function is added.
 2) Regularization 일반화의 lamda 값을 자동으로 결정하기 위한 베이지안 정규화 알고리즘이 적용됨
+*/
+
+/*
+IAN_Beta_1.5
+1) LeakyReLU, ELU, SELU activation functions are added
+2) LMBP_ES에서, training 데이터에서 test 데이터를 뺄 필요가 없는데 빼고 있음.
+   빼지 않도록 수정
+3) mapminmax의 minmax 값 설정 가능하게끔 변경
+4) StandardScaler 추가
 */
 
 void main()
@@ -55,30 +65,38 @@ void main()
 
 	// Using File Parameters Setting
 	int generalization = 0; // 0: Early Stopping, 1: Regularization
+	int normalization = 0;	// 0: minmax_scaler, 1: StandardScaler
 	int repeat_no = 5;
 	int max_step = 500;
 	int patience = 20;
 	int M = 2;
-	int all_Q1 = 0;		// sample number of train input data
+	int Q1 = 0;			// sample number of train + validation input data
 	int test_Q1 = 0;	// sample number of test input data
 	int R = 0;			// number of input parameters
-	int all_Q2 = 0;		// sample number of train target data
+	int Q2 = 0;			// sample number of train + validation target data
 	int test_Q2 = 0;	// sample number of test target data
 	int sM = 0;			// number of target parameters = number of neuron of output layer
-
 	int val_Q = 0;
+
+	RealVector yminmax(2);
+	yminmax(0) = -1;	// min value
+	yminmax(1) = 1;		// max value
 
 	ifstream fin;
 	fin.open("val_Q.txt");
 	fin >> val_Q;
 	fin.close();
 	fin.clear();
-
 	
 	// START Training Information Import
 	fin.open("info.log");
 
 	fin >> generalization;	// 0: Early Stopping, 1: Regularization
+	fin >> normalization;	// 0: minmax_scaler, 1: StandardScaler
+	if (normalization == 0) {
+		fin >> yminmax(0);
+		fin >> yminmax(1);
+	}
 	fin >> repeat_no;
 	fin >> max_step;
 	if (generalization == 0) {
@@ -93,8 +111,18 @@ void main()
 	IntVector Trans(M);
 	IntVector S(M);
 
+	/*
+	Trans(ii) == 1 : logsig(sigmoid)
+	Trans(ii) == 2 : tansig(tanh)
+	Trans(ii) == 3 : purelin(linear, identity)
+	Trans(ii) == 4 : ReLU
+	Trans(ii) == 5 : LeakyReLU (alpha = 1)
+	Trans(ii) == 6 : ELU (alpha = 1)
+	Trans(ii) == 7 : SELU (alpha=1.67326324, scale=1.05070098)
+	*/
+
 	for (int ii = 0; ii < M; ii++) {
-		fin >> Trans(ii);	//TransferFnc, 1 = logsig, 2 = tansig, 3 = purelin, 4 = relu
+		fin >> Trans(ii);
 	}
 	for (int ii = 0; ii < M - 1; ii++) {
 		fin >> S[ii];		// Number of Neuron for each layer
@@ -120,14 +148,14 @@ void main()
 
 	// START Import train_input data
 	fin.open("train_input.txt");
-	fin >> all_Q1;
+	fin >> Q1;
 	fin >> R;
 
-	RealCMatrix all_PT(all_Q1,R);
-	RealMatrix all_P(R, all_Q1);
-	RealMatrix all_Pmap(R, all_Q1);
+	RealCMatrix all_PT(Q1,R);
+	RealMatrix all_P(R, Q1);
+	RealMatrix all_Pmap(R, Q1);
 
-	for(int ii=0; ii<all_Q1; ii++){
+	for(int ii=0; ii<Q1; ii++){
 		for(int jj=0; jj<R; jj++){
 			fin >> all_PT[ii][jj];
 		}
@@ -135,7 +163,7 @@ void main()
 	fin.close();
 	fin.clear();
 
-	for(int ii=0; ii<all_Q1; ii++){
+	for(int ii=0; ii<Q1; ii++){
 		for(int jj=0; jj<R; jj++){
 			all_P(jj,ii) = all_PT[ii][jj];
 		}
@@ -145,14 +173,14 @@ void main()
 
 	// START Import train_target data
 	fin.open("train_target.txt");
-	fin >> all_Q2;
+	fin >> Q2;
 	fin >> sM;
 	
-	RealCMatrix all_TT(all_Q2,sM);
-	RealMatrix all_T(sM, all_Q2);
-	RealMatrix all_Tmap(sM, all_Q2);
+	RealCMatrix all_TT(Q2,sM);
+	RealMatrix all_T(sM, Q2);
+	RealMatrix all_Tmap(sM, Q2);
 
-	for(int ii=0; ii<all_Q2; ii++){
+	for(int ii=0; ii<Q2; ii++){
 		for(int jj=0; jj<sM; jj++){
 			fin >> all_TT[ii][jj];
 		}
@@ -160,7 +188,7 @@ void main()
 	fin.close();
 	fin.clear();
 
-	for(int ii=0; ii<all_Q2; ii++){
+	for(int ii=0; ii<Q2; ii++){
 		for(int jj=0; jj<sM; jj++){
 			all_T(jj,ii) = all_TT[ii][jj];
 		}
@@ -219,28 +247,49 @@ void main()
 
 
 	S[M - 1] = sM;
+
+	RealVector Pdata1(R);	// Pmin or Pmu
+	RealVector Pdata2(R);	// Pmax or Psigma
+	RealVector Tdata1(sM);	// Tmin or Tmu
+	RealVector Tdata2(sM);	// Tmax of Tsigma
 	
-	RealVector Pmax(R);
-	RealVector Pmin(R);
-	RealVector Tmax(sM);
-	RealVector Tmin(sM);
+	if (normalization == 0){
 
-	mapminmax(all_P, all_Pmap, Pmax, Pmin);
-	mapminmax(all_T, all_Tmap, Tmax, Tmin);
+		mapminmax(all_P, all_Pmap, Pdata1, Pdata2, yminmax);
+		mapminmax(all_T, all_Tmap, Tdata1, Tdata2, yminmax);
 
-	mapapply(test_P, test_Pmap, Pmax, Pmin);
-	mapapply(test_T, test_Tmap, Tmax, Tmin);
+		mapapply(test_P, test_Pmap, Pdata1, Pdata2, yminmax);
+		mapapply(test_T, test_Tmap, Tdata1, Tdata2, yminmax);
+	}
+	else {
+
+		standardscaler(all_P, all_Pmap, Pdata1, Pdata2);
+		standardscaler(all_T, all_Tmap, Tdata1, Tdata2);
+
+		standardapply(test_P, test_Pmap, Pdata1, Pdata2);
+		standardapply(test_T, test_Tmap, Tdata1, Tdata2);
+	}
+	
 
 	ofstream fout;
-	if(all_Q1 != all_Q2){
+	if(Q1 != Q2){
 		fout.open("setting.log");
-		fout << "Sample Data Number is not Equal!" << endl;
+		fout << "Training Sample Data Number is not Equal!" << endl;
 		fout.close();
-		fout << "Sample Data Number is not Equal!" << endl;
+		// fout << "Training Sample Data Number is not Equal!" << endl;
 	}
 	else{
 		fout.open("setting.log");
 
+		if (normalization == 0) {
+			fout << "Data normalization : minmaxscaler" << endl;
+			fout << "Minimum value : " << yminmax(0) << endl;
+			fout << "Maximum value : " << yminmax(1) << endl;
+			fout << endl;
+		}
+		else {
+			fout << "Data normalization : StandardScaler" << endl;
+		}
 		fout << "Maximum Epoch : " << max_step << endl;
 
 		if(generalization == 0){
@@ -255,16 +304,25 @@ void main()
 
 		for (int ii = 0; ii < M; ii++) {
 			if (Trans(ii) == 1) {
-				fout << "Transfer Fnc. of Layer " << ii + 1 << " : logsig" << endl;
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : logsig" << endl;
 			}
 			else if (Trans(ii) == 2) {
-				fout << "Transfer Fnc. of Layer " << ii + 1 << " : tansig" << endl;
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : tanh" << endl;
 			}
 			else if (Trans(ii) == 3) {
-				fout << "Transfer Fnc. of Layer " << ii + 1 << " : purelin" << endl;
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : purelin" << endl;
+			}
+			else if (Trans(ii) == 4) {
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : ReLU" << endl;
+			}
+			else if (Trans(ii) == 5) {
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : LeakyReLU" << endl;
+			}
+			else if (Trans(ii) == 6) {
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : ELU" << endl;
 			}
 			else {
-				fout << "Transfer Fnc. of Layer " << ii + 1 << " : relu" << endl;
+				fout << "Activation Fnc. of Layer " << ii + 1 << " : SELU" << endl;
 			}
 		}
 		fout << endl;
@@ -274,13 +332,14 @@ void main()
 		}
 		fout << endl;
 
-		fout << "Number of Training data: " << all_Q1 - val_Q << endl;
+		int train_Q = Q1 - val_Q;
+
+		fout << "Number of Training data: " << train_Q << endl;
 		fout << "Number of Validation data: " << val_Q << endl;
 		fout << "Number of Test data: " << test_Q1 << endl;
 
 		fout.close();
-
-		int Q = all_Q1;
+		
 		int converge_check = 0;
 
 		start = clock();
@@ -298,13 +357,15 @@ void main()
 			if(nResult == 0){
 				if (generalization == 0) {
 					do {
-						converge_check = LMBP_ES(S, Trans, Pmax, Pmin, Tmax, Tmin, all_Pmap, all_Tmap, test_Pmap, test_Tmap, max_step, patience, M, R, sM, Q, val_Q, test_Q1, FdrName, kk, mucheck);
+						// all_Pmap, all_Tmap: input and output of training + validation data
+						converge_check = LMBP_ES(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, all_Pmap, all_Tmap, test_Pmap, test_Tmap, yminmax, max_step, patience, M, R, sM, train_Q, val_Q, test_Q1, FdrName, kk, mucheck, normalization);
 					} while (converge_check == 1);
 				}
 				else
 				{
 					do {
-						converge_check = LMBP_RG(S, Trans, Pmax, Pmin, Tmax, Tmin, all_Pmap, all_Tmap, test_Pmap, test_Tmap, max_step, M, R, sM, Q, test_Q1, FdrName, kk, mucheck, alphacheck);
+						// all_Pmap, all_Tmap: input and output of training data
+						converge_check = LMBP_RG(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, all_Pmap, all_Tmap, test_Pmap, test_Tmap, yminmax, max_step, M, R, sM, train_Q, test_Q1, FdrName, kk, mucheck, alphacheck, normalization);
 					} while (converge_check == 1);
 				}
 			}
