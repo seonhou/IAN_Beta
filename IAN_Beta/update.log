@@ -1,0 +1,40 @@
+[IAN_Beta1.1]
+
+변경전) input 및 target 데이터는 반드시 input.txt 및 target.txt 이어야만 함
+변경후) info.log 에 저장되어 있는 string 정보를 이용하여 input 및 target 데이터를 load 함
+
+변경전) 학습에 필요한 정보는 parameters.txt에 저장되어 있음
+변경후) 학습에 필요한 정보는 info.log에 저장되어 있음
+
+변경전) MSE.txt로 MSE가 기록됨
+변경후) MSE_scaled.txt로 MSE가 기록됨. 왜냐하면 이 코드에서 계산하는 MSE는 mapminmax가 적용된 test data의 MSE임
+
+
+[IAN_Beta1.2]
+IAN_Beta1.2는 수정하다가 버림
+IAN_Beta1.2는 Early Stopping 에서 반복학습 할 때 동일한 test 데이터셋이 사용될 수 있도록 수정하였음
+Regularization은 아직 수정하지 않음 -> 수정하다가 적합하지 않은 방향인 것으로 판단되어 중단함
+
+
+[IAN_Beta1.3]
+IAN_Beta_1.1 에서 업데이트를 진행함
+변경전) 학습데이터가 주어지면 training 및 validation 그리고 test 데이터가 무작위로 선정되어 학습이 진행됨
+변경후) Datadivision은 별도의 exe 파일로 만들어서 학습 이전에 train.txt, test.txt 를 출력하고 이후 IAN에서 train.txt와 test.txt를 입력하여 학습에 사용함
+		이렇게 변경한 이유는 신경망 모델을 바꿔가면서 오차를 비교할 때 동일한 test 데이터셋을 사용하고자 할 때를 대비하기 위함임
+
+
+[IAN_Beta1.4]
+1) ReLU activation function is added.
+2) Regularization 일반화의 lamda 값을 자동으로 결정하기 위한 베이지안 정규화 알고리즘이 적용됨
+
+
+[IAN_Beta1.5]
+1) LeakyReLU, ELU, SELU activation functions are added
+2) LMBP_ES에서, training 데이터에서 test 데이터를 뺄 필요가 없는데 빼고 있음.
+   빼지 않도록 수정
+3) mapminmax의 minmax 값 설정 가능하게끔 변경
+4) StandardScaler 추가
+
+
+[IAN_Beta1.6]
+1) Datadivision은 이 project에서 아예 삭제 --> DataSplit project에서 모든 데이터 분할작업 수행

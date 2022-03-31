@@ -1,20 +1,13 @@
-/*
-[rev_-] First Release
-[rev_A] relu updated (21.06.08)
-*/
-
 #pragma once
 
-#include "mapminmax.h"
 #include "TransferFnc.h"
-#include "dataDivision.h"
 #include "ANN.h"
 #include "X2Wb.h"
 #include "SaveANNoutput.h"
 #include "getMSE_ES.h"
 #include "isnan.h"
 
-int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _all_Pmap, RealMatrix& _all_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _patience, int _M, int _R, int _sM, int _train_Q, int _val_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _normalization)
+int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _val_Pmap, RealMatrix& _val_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _patience, int _M, int _R, int _sM, int _train_Q, int _val_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _normalization)
 {
 	clock_t LM_start, LM_finish;
 	double LM_duration = 0;
@@ -25,14 +18,7 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 	int check = 0;
 	int LMBP_converge = 0;
 
-	// _all_Pmap, _all_Tmap: training + validation data
-	RealMatrix train_Pmap(_R, _train_Q);
-	RealMatrix train_Tmap(_sM, _train_Q);
-	RealMatrix val_Pmap(_R, _val_Q);
-	RealMatrix val_Tmap(_sM, _val_Q);
-	RealMatrix SenAna(_R, _sM); // BackPropagation Sensitivity
-
-	dataDivision(_all_Pmap, _all_Tmap, _R, _sM, _train_Q, _val_Q, train_Pmap, train_Tmap, val_Pmap, val_Tmap);
+	RealMatrix SenAna(_R, _sM);	// BackPropagation Sensitivity
 
 	// 아래는 MATLAB trainlm.m 에 나와있는 초기값을 활용함
 	double mu = 0.001;
@@ -44,9 +30,9 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		size_x = size_x + _S[i] * (_S[i - 1] + 1);
 	}
 
-	int train_size_v = _sM * _train_Q; // Size of Error Vector
-	int val_size_v = _sM * _val_Q; // Size of Validation Error Vector
-	int test_size_v = _sM * _test_Q; // Size of Test Error Vector
+	int train_size_v = _sM * _train_Q;	// Size of Error Vector
+	int val_size_v = _sM * _val_Q;		// Size of Validation Error Vector
+	int test_size_v = _sM * _test_Q;	// Size of Test Error Vector
 
 	string stepout = _FileDir + "\\step.log";
 	string dataout = _FileDir + "\\data.log";
@@ -103,7 +89,7 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 	RealMatrix test_A(_S[_M - 1], _test_Q);
 
 	W[0].resize(_S[0], _R);
-
+	
 	for (int i = 1; i < _M; i++) {
 		W[i].resize(_S[i], _S[i - 1]);
 	}
@@ -139,8 +125,8 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		fout.close();
 
 		X2Wb(X1, _S, _R, _M, W, b);
-		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, train_Pmap, W, b, train_N);
-		FF1 = getMSE_ES(_sM, _train_Q, train_size_v, train_Tmap, train_A[_M - 1], V1);
+		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
+		FF1 = getMSE_ES(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V1);
 
 		// Set Jacobian Matrix START
 		int jrow = 0;
@@ -215,7 +201,7 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 					for (int i = 0; i < _S[m]; i++) {
 						if (m == 0) {
 							for (int r = 0; r < _R; r++) {
-								J(jrow, jcol) = MS[m](i, j) * train_Pmap(r, q);
+								J(jrow, jcol) = MS[m](i, j) * _train_Pmap(r, q);
 								jcol = jcol + 1;
 							}
 						}
@@ -263,8 +249,8 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		X2 = X1 - del_x;
 
 		X2Wb(X2, _S, _R, _M, W, b);
-		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, train_Pmap, W, b, train_N);
-		FF2 = getMSE_ES(_sM, _train_Q, train_size_v, train_Tmap, train_A[_M - 1], V2);
+		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
+		FF2 = getMSE_ES(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
 
 		count = count + 1;
 
@@ -323,8 +309,8 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 				X2 = X1 - del_x;
 
 				X2Wb(X2, _S, _R, _M, W, b);
-				train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, train_Pmap, W, b, train_N);
-				FF2 = getMSE_ES(_sM, _train_Q, train_size_v, train_Tmap, train_A[_M - 1], V2);
+				train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
+				FF2 = getMSE_ES(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
 
 				count = count + 1;
 
@@ -375,8 +361,8 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		}
 
 		// Neural Network using VALIDATION dataset
-		val_A = ANN(_val_Q, _R, _M, _S, _Trans, val_Pmap, W, b);
-		FF4 = getMSE_ES(_sM, _val_Q, val_size_v, val_Tmap, val_A, val_V);
+		val_A = ANN(_val_Q, _R, _M, _S, _Trans, _val_Pmap, W, b);
+		FF4 = getMSE_ES(_sM, _val_Q, val_size_v, _val_Tmap, val_A, val_V);
 
 		if (FF4 >= FF3) {
 			check = check + 1;
@@ -419,11 +405,11 @@ int LMBP_ES(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		X2Wb(X3, _S, _R, _M, W, b);
 	}
 
-	train_A[_M - 1] = ANN(_train_Q, _R, _M, _S, _Trans, train_Pmap, W, b);
-	SaveANNoutput("train", train_Tmap, train_A[_M - 1], _sM, _train_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
+	train_A[_M - 1] = ANN(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b);
+	SaveANNoutput("train", _train_Tmap, train_A[_M - 1], _sM, _train_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
 
-	val_A = ANN(_val_Q, _R, _M, _S, _Trans, val_Pmap, W, b);
-	SaveANNoutput("val", val_Tmap, val_A, _sM, _val_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
+	val_A = ANN(_val_Q, _R, _M, _S, _Trans, _val_Pmap, W, b);
+	SaveANNoutput("val", _val_Tmap, val_A, _sM, _val_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);
 
 	test_A = ANN(_test_Q, _R, _M, _S, _Trans, _test_Pmap, W, b);
 	SaveANNoutput("test", _test_Tmap, test_A, _sM, _test_Q, _Tdata1, _Tdata2, _yminmax, _FileDir, _normalization);

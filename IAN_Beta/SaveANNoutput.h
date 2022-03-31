@@ -1,5 +1,7 @@
 // Write ANN output and target of TEST dataset START
 #pragma once
+
+#include "mapminmax.h"
 #include "standardscaler.h"
 
 void SaveANNoutput(string datatype, RealMatrix& __Tmap, RealMatrix& __A, int __sM, int __Q, RealVector& __Tdata1, RealVector& __Tdata2, RealVector& __yminmax, string __FileDir, int __normalization)

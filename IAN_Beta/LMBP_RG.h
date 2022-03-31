@@ -1,8 +1,3 @@
-/*
-[rev_-] First Release
-[rev_A] relu updated (21.06.08)
-*/
-
 #pragma once
 
 #include "mapminmax.h"

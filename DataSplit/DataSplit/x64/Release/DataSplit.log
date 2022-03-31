@@ -1,0 +1,24 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(519,5): warning MSB8028: 중간 디렉터리(x64\Release\)에 다른 프로젝트(DataSplit_1.0.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
+  main.cpp
+E:\My_Research\01_ANN Coding\IAN_Beta\IAN_Beta\DataSplit\DataSplit\main.cpp(92,18): warning C4244: '=': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+E:\My_Research\01_ANN Coding\IAN_Beta\IAN_Beta\DataSplit\DataSplit\main.cpp(93,19): warning C4244: '=': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(5401,64): warning C4244: '인수': '_Diff'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.28.29910\include\algorithm(5481): message : 컴파일되는 함수 템플릿 인스턴스화 'void std::_Random_shuffle1<_RanIt,int(int)>(_RanIt,_RanIt,_RngFn (__cdecl &))'에 대한 참조를 확인하세요.
+          with
+          [
+              _RanIt=std::_Vector_iterator<std::_Vector_val<std::_Simple_types<int>>>,
+              _RngFn=int (int)
+          ]
+E:\My_Research\01_ANN Coding\IAN_Beta\IAN_Beta\DataSplit\DataSplit\dataDivision.h(39): message : 컴파일되는 함수 템플릿 인스턴스화 'void std::random_shuffle<std::_Vector_iterator<std::_Vector_val<std::_Simple_types<_Ty>>>,int(__cdecl &)(int)>(_RanIt,_RanIt,_RngFn)'에 대한 참조를 확인하세요.
+          with
+          [
+              _Ty=int,
+              _RanIt=std::_Vector_iterator<std::_Vector_val<std::_Simple_types<int>>>,
+              _RngFn=int (__cdecl &)(int)
+          ]
+  코드를 생성하고 있습니다.
+  2 of 257 functions ( 0.8%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  코드를 생성했습니다.
+  DataSplit.vcxproj -> E:\My_Research\01_ANN Coding\IAN_Beta\IAN_Beta\DataSplit\x64\Release\DataSplit.exe

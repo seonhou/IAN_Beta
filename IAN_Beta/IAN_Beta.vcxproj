@@ -145,7 +145,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ANN.h" />
-    <ClInclude Include="dataDivision.h" />
     <ClInclude Include="getMSE_ES.h" />
     <ClInclude Include="getMSE_RG.h" />
     <ClInclude Include="getSize.h" />
@@ -175,12 +174,16 @@
     <ClInclude Include="getAlphaBetaGamma.h" />
     <ClInclude Include="get_activated_value.h" />
     <ClInclude Include="standardscaler.h" />
+    <ClInclude Include="normalDistribution.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="linalg\BLAS_Interface.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mapminmax.cpp" />
     <ClCompile Include="standardscaler.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="update.log" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

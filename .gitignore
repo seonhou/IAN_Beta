@@ -113,5 +113,7 @@ octave-workspace
 /x64/
 /.git/
 /.vs/
+/DataSplit/.vs/
+/DataSplit/x64/
 
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,matlab
