@@ -149,6 +149,7 @@
     <ClInclude Include="getMSE_RG.h" />
     <ClInclude Include="getSize.h" />
     <ClInclude Include="isnan.h" />
+    <ClInclude Include="kernel_initializer.h" />
     <ClInclude Include="linalg\ArrayAllocator.h" />
     <ClInclude Include="linalg\BLAS_Impl.h" />
     <ClInclude Include="linalg\BLAS_Interface.h" />
@@ -174,7 +175,7 @@
     <ClInclude Include="getAlphaBetaGamma.h" />
     <ClInclude Include="get_activated_value.h" />
     <ClInclude Include="standardscaler.h" />
-    <ClInclude Include="normalDistribution.h" />
+    <ClInclude Include="Wb2X.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="linalg\BLAS_Interface.cpp" />

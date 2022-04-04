@@ -38,3 +38,7 @@ IAN_Beta_1.1 에서 업데이트를 진행함
 
 [IAN_Beta1.6]
 1) Datadivision은 이 project에서 아예 삭제 --> DataSplit project에서 모든 데이터 분할작업 수행
+2) kernel initializer 도입 (1.6.1)
+	- Glorot initialization (=Xavier)
+	- LuCun initialization
+	- He initialization

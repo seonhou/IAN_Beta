@@ -105,7 +105,10 @@
     <ClInclude Include="standardscaler.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="normalDistribution.h">
+    <ClInclude Include="Wb2X.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="kernel_initializer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

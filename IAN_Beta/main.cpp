@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <random>
 
 #include "linalg/Vector.hpp"
 #include "linalg/Matrix.hpp"
@@ -74,6 +75,7 @@ void main()
 
 	IntVector Trans(M);
 	IntVector S(M);
+	IntVector kernel_init(M);
 
 	/*
 	Trans(i) == 1 : logsig(sigmoid)
@@ -83,11 +85,20 @@ void main()
 	Trans(i) == 5 : LeakyReLU (alpha = 1)
 	Trans(i) == 6 : ELU (alpha = 1)
 	Trans(i) == 7 : SELU (alpha=1.67326324, scale=1.05070098)
+
+	kernel_init(i) == 0 : Glorot
+	kernel_init(i) == 1 : LuCun
+	kernel_init(i) == 2 : He
 	*/
 
 	for (int i = 0; i < M; i++) {
 		fin >> Trans(i);
 	}
+
+	for (int i = 0; i < M; i++) {
+		fin >> kernel_init[i];
+	}
+
 	for (int i = 0; i < M - 1; i++) {
 		fin >> S[i];		// Number of Neuron for each layer
 	}
@@ -387,14 +398,14 @@ void main()
 			if (nResult == 0) {
 				if (generalization == 0) {
 					do {
-						converge_check = LMBP_ES(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, val_Pmap, val_Tmap, test_Pmap, test_Tmap, yminmax, max_step, patience, M, R, sM, train_Q1, val_Q1, test_Q1, FdrName, kk, mucheck, normalization);
+						converge_check = LMBP_ES(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, val_Pmap, val_Tmap, test_Pmap, test_Tmap, yminmax, max_step, patience, M, R, sM, train_Q1, val_Q1, test_Q1, FdrName, kk, mucheck, normalization, kernel_init);
 					} while (converge_check == 1);
 				}
 				else
 				{
 					do {
 						// all_Pmap, all_Tmap: input and output of training data
-						converge_check = LMBP_RG(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, test_Pmap, test_Tmap, yminmax, max_step, M, R, sM, train_Q1, test_Q1, FdrName, kk, mucheck, alphacheck, normalization);
+						converge_check = LMBP_RG(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, test_Pmap, test_Tmap, yminmax, max_step, M, R, sM, train_Q1, test_Q1, FdrName, kk, mucheck, alphacheck, normalization, kernel_init);
 					} while (converge_check == 1);
 				}
 			}

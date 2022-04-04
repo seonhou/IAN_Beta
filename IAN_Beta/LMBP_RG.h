@@ -4,12 +4,14 @@
 #include "TransferFnc.h"
 #include "ANN.h"
 #include "X2Wb.h"
+#include "Wb2X.h"
 #include "SaveANNoutput.h"
 #include "getMSE_RG.h"
 #include "getAlphaBetaGamma.h"
 #include "isnan.h"
+#include "kernel_initializer.h"
 
-int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck, int _normalization)
+int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck, int _normalization, IntVector _kernel_init)
 {
 	clock_t LM_start, LM_finish;
 	double LM_duration = 0;
@@ -57,13 +59,15 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 	RealVector X2(size_x);
 	RealVector X3(size_x);
 
-	// SET INITIAL VALUES OF PARAMETER X
+	/*
+	// SET INITIAL VALUES OF PARAMETER X (old version)
 	srand((unsigned int)time(NULL));
 
 	for (int i = 0; i < size_x; i++) {
 		X1[i] = (rand() % 1000) - 500;
 		X1[i] = X1[i] / 1000;	// -0.5 < X1 < 0.5
 	}
+	*/
 
 	/* This Code was maded for OPENMP
 	RealVector X4(size_x);
@@ -114,6 +118,12 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		MS_temp[i].resize(_S[i], _S[i]);
 		MSWT[i].resize(_S[i], _S[i + 1]);
 	}
+
+	// Kernel Initialization
+	kernel_initializer(W, b, _S, _R, _M, _kernel_init);
+
+	Wb2X(W, b, X1, _S, _R, _M);	// 초기화 된 W, b를 X에 대입
+
 	// Allocate END
 	RealVector V1(train_size_v);
 	RealVector V2(train_size_v);
