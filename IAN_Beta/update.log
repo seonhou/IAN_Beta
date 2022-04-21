@@ -42,3 +42,8 @@ IAN_Beta_1.1 에서 업데이트를 진행함
 	- Glorot initialization (=Xavier)
 	- LuCun initialization
 	- He initialization
+
+[IAN_Beta1.7]
+1) L2 Regularization 적용 시,
+   사용자가 원하는 alpha, beta 값을 고정하거나 또는
+   자동으로 alpha, beta 값을 갱신할 지 여부를 선택할 수 있게 변경

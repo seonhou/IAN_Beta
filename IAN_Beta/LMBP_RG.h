@@ -11,7 +11,7 @@
 #include "isnan.h"
 #include "kernel_initializer.h"
 
-int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck, int _normalization, IntVector _kernel_init)
+int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVector& _Pdata2, RealVector& _Tdata1, RealVector& _Tdata2, RealMatrix& _train_Pmap, RealMatrix& _train_Tmap, RealMatrix& _test_Pmap, RealMatrix& _test_Tmap, RealVector& _yminmax, int _max_step, int _M, int _R, int _sM, int _train_Q, int _test_Q, string _FileDir, int _kk, int _mucheck, int _alphacheck, int _normalization, IntVector _kernel_init, int _alpha_auto, double _alpha_init, double _beta_init)
 {
 	clock_t LM_start, LM_finish;
 	double LM_duration = 0;
@@ -34,8 +34,8 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		size_x = size_x + _S[i] * (_S[i - 1] + 1);
 	}
 
-	double alpha = 0.1;
-	double beta = 0.9;
+	double alpha = _alpha_init;
+	double beta = _beta_init;
 	double gamma = size_x;
 
 	int train_size_v = _sM * _train_Q; // Size of Error Vector
@@ -147,14 +147,17 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		X2Wb(X1, _S, _R, _M, W, b);
 		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
 
-		MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V1);
-		MSE2 = getMSE2_RG(size_x, X1);
-		FF1 = beta * MSE1 + alpha * MSE2;
+		if (_alpha_auto == 1) {
+			MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V1);
+			MSE2 = getMSE2_RG(size_x, X1);
+			FF1 = beta * MSE1 + alpha * MSE2;
 
-		//FF1 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, alpha, beta, _train_Tmap, train_A[_M - 1], V1, X1);
-		
-		alpha = getAlpha(gamma, MSE2);
-		beta = getBeta(gamma, MSE1, _train_Q, _sM);
+			alpha = getAlpha(gamma, MSE2);
+			beta = getBeta(gamma, MSE1, _train_Q, _sM);
+		}
+		else {
+			FF1 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, _alpha_init, _beta_init, _train_Tmap, train_A[_M - 1], V1, X1);
+		}
 
 		if (_alphacheck == 1) {
 			fout.open(alphabetaout.c_str(), ios_base::out | ios_base::app);
@@ -293,15 +296,18 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		X2Wb(X2, _S, _R, _M, W, b);
 		train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
 
-		MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
-		MSE2 = getMSE2_RG(size_x, X2);
-		FF2 = beta * MSE1 + alpha * MSE2;
+		if (_alpha_auto == 1) {
+			MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
+			MSE2 = getMSE2_RG(size_x, X2);
+			FF2 = beta * MSE1 + alpha * MSE2;
 
-		//FF2 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, alpha, beta, _train_Tmap, train_A[_M - 1], V2, X2);
-
-		gamma = getGamma(size_x, alpha, beta, JTJ);
-		alpha = getAlpha(gamma, MSE2);
-		beta = getBeta(gamma, MSE1, _train_Q, _sM);
+			gamma = getGamma(size_x, alpha, beta, JTJ);
+			alpha = getAlpha(gamma, MSE2);
+			beta = getBeta(gamma, MSE1, _train_Q, _sM);
+		}
+		else {
+			FF2 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, _alpha_init, _beta_init, _train_Tmap, train_A[_M - 1], V2, X2);
+		}
 
 		count = count + 1;
 
@@ -376,15 +382,18 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 				X2Wb(X2, _S, _R, _M, W, b);
 				train_A = ANN_train(_train_Q, _R, _M, _S, _Trans, _train_Pmap, W, b, train_N);
 
-				MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
-				MSE2 = getMSE2_RG(size_x, X2);
-				FF2 = beta * MSE1 + alpha * MSE2;
+				if (_alpha_auto == 1) {
+					MSE1 = getMSE1_RG(_sM, _train_Q, train_size_v, _train_Tmap, train_A[_M - 1], V2);
+					MSE2 = getMSE2_RG(size_x, X2);
+					FF2 = beta * MSE1 + alpha * MSE2;
 
-				//FF2 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, alpha, beta, _train_Tmap, train_A[_M - 1], V2, X2);		
-
-				gamma = getGamma(size_x, alpha, beta, JTJ);
-				alpha = getAlpha(gamma, MSE2);
-				beta = getBeta(gamma, MSE1, _train_Q, _sM);
+					gamma = getGamma(size_x, alpha, beta, JTJ);
+					alpha = getAlpha(gamma, MSE2);
+					beta = getBeta(gamma, MSE1, _train_Q, _sM);
+				}
+				else {
+					FF2 = getMSE_RG(MSE1, MSE2, _sM, _train_Q, train_size_v, size_x, _alpha_init, _beta_init, _train_Tmap, train_A[_M - 1], V2, X2);
+				}
 
 				count = count + 1;
 
@@ -439,7 +448,6 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 		}
 
 		if (fabs(FF2 - FF2_pre) < MSE_end) break;
-		// cout << FF2_pre << "\t" << FF2 << "\t" << fabs(FF2 - FF2_pre) << endl;
 
 		FF2_pre = FF2;		
 
@@ -456,18 +464,23 @@ int LMBP_RG(const IntVector& _S, IntVector& _Trans, RealVector& _Pdata1, RealVec
 
 	// Performance Evaluation using TEST dataset
 
-	MSE1 = getMSE1_RG(_sM, _test_Q, test_size_v, _test_Tmap, test_A, test_V);
-	MSE2 = getMSE2_RG(size_x, X2);
-	MSE = beta * MSE1 + alpha * MSE2;
+	if (_alpha_auto == 1) {
+		MSE1 = getMSE1_RG(_sM, _test_Q, test_size_v, _test_Tmap, test_A, test_V);
+		MSE2 = getMSE2_RG(size_x, X2);
+		MSE = beta * MSE1 + alpha * MSE2;
+	}
+	else {
+		MSE = getMSE_RG(MSE1, MSE2, _sM, _test_Q, test_size_v, size_x, _alpha_init, _beta_init, _test_Tmap, test_A, test_V, X2);
+	}
+	
 
-	if (_alphacheck == 0) {
+	if (_alphacheck == 1) {
 		fout.open(alphabetaout.c_str());
 		fout << count << "\t" << alpha << "\t" << beta << "\t" << gamma << "\t" << alpha / beta << endl;
 		fout.close();
 	}
 
-	//MSE = getMSE_RG(MSE1, MSE2, _sM, _test_Q, test_size_v, size_x, alpha, beta, _test_Tmap, test_A, test_V, X2);
-
+	
 	LM_finish = clock();
 	LM_duration = (double)(LM_finish - LM_start) / CLOCKS_PER_SEC;
 

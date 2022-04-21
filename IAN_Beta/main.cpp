@@ -46,6 +46,11 @@ void main()
 	int val_Q2 = 0;		// sample number of validation target data
 	int test_Q2 = 0;	// sample number of test target data
 
+	int alpha_auto = 0;			// 0: use fixed alpha, beta value
+								// 1: automatically determine the alpha and beta value								
+	double alpha_init = 0.1;	// hyperparameter of L2 regularization
+	double beta_init = 0.9;		// hyperparameter of L2 regularization
+
 	RealVector yminmax(2);
 	yminmax(0) = 0;		// min value
 	yminmax(1) = 1;		// max value
@@ -55,7 +60,7 @@ void main()
 	// START Training Information Import
 	fin.open("info.log");
 
-	fin >> generalization;	// 0: Early Stopping, 1: Regularization
+	fin >> generalization;	// 0: Early Stopping, 1: L2 Regularization
 	fin >> normalization;	// 0: minmax_scaler, 1: StandardScaler
 
 	if (normalization == 0) {
@@ -69,7 +74,9 @@ void main()
 	}
 	else
 	{
-		//fin >> lamda;
+		fin >> alpha_auto;
+		fin >> alpha_init;
+		fin >> beta_init;
 	}
 	fin >> M;	//Number of LAYER
 
@@ -110,7 +117,7 @@ void main()
 
 	// START Import hisout.txt
 	int mucheck = 0;
-	int alphacheck = 0;
+	int alphacheck = 0;			// alpha, beta를 기록할 것인지 여부 확인
 	fin.open("hisout.txt");
 	fin >> mucheck;
 	if (generalization == 1) {
@@ -405,7 +412,7 @@ void main()
 				{
 					do {
 						// all_Pmap, all_Tmap: input and output of training data
-						converge_check = LMBP_RG(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, test_Pmap, test_Tmap, yminmax, max_step, M, R, sM, train_Q1, test_Q1, FdrName, kk, mucheck, alphacheck, normalization, kernel_init);
+						converge_check = LMBP_RG(S, Trans, Pdata1, Pdata2, Tdata1, Tdata2, train_Pmap, train_Tmap, test_Pmap, test_Tmap, yminmax, max_step, M, R, sM, train_Q1, test_Q1, FdrName, kk, mucheck, alphacheck, normalization, kernel_init, alpha_auto, alpha_init, beta_init);
 					} while (converge_check == 1);
 				}
 			}
